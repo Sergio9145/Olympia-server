@@ -1,0 +1,19 @@
+{
+  "name": "Olympia",
+  "version": "0.0.1",
+  "description": "A simple web server",
+  "main": "server.js",
+  "repository": "",
+  "author": "Sergiy Opryshko (#7759145) sopryshko9145@conestogac.on.ca",
+  "dependencies": {
+    "express": "~3.2.4",
+    "mongodb": "^2.2.27",
+    "mongoose": "^4.10.3",
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.17.2",
+    "connect-mongodb-session": "^1.3.0",
+    "nodemailer": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "smtp-connection": "^4.0.2"
+  }
+}
