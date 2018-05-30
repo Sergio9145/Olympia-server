@@ -81,35 +81,49 @@ router.use(bodyParser.json());
 //   })(req, res, next);
 // });
 
-//* Tell the router how to handle a post request to upload a file
 router.post('/register', function(req, res) {
-	var resultOk = false;
-	var post = req.body;
-	
-	var user1 = new User({
-	  email : post.username,
-	  password : post.password
-	});
-	
-	user1.save(function(err) {
-	  if (err) {
-	    console.log(err);
-	  }
-	  else {
-	    console.log('User ' + post.username + ' with password ' + post.password + ' created!');
-		resultOk = true;
-	  }
-	})
-	
-	if (resultOk) {
-		var msg = "Updated Successfully";
-		console.log(msg);
-		res.json({ success : msg, status : 200 });
-	} else {
-		var msg = "Something went wrong on the server";
-		console.log(msg);
-		res.json({ success : msg, status : 500 });
-	}
+    var post = req.body;
+
+    var newUser = new User({
+        firstName: post.firstName,
+        lastName: post.lastName,
+        email: post.email,
+        username: post.username,
+        password: post.password,
+        date: new Date(), // current time
+        key: "42" // to be decided later
+    });
+
+    newUser.save(function(err) {
+      if (err) {
+        console.log('Something went wrong on the server: ' + err);
+        res.json({ success: 'Something went wrong on the server', status: 500 });
+      } else {
+        console.log('User ' + post.username + ' with password ' + post.password + ' created!');
+        res.json({ success: 'User ' + post.username + ' has been registered successfully', status: 200 });
+      }
+    });
+});
+
+router.post('/login', function(req, res) {
+    var post = req.body;
+
+    var currentUser = new User({
+      username: post.username,
+      password: post.password
+    });
+
+    User.findOne({ username: currentUser.username })
+    .then(function(user){
+        if (user.password == currentUser.password) {
+	        var msg = "User has logged in successfully";
+	        console.log(msg);
+	        res.json({ success: msg, status: 200 });
+        } else {
+            console.log('Incorrect password');
+            res.json({ success: 'Incorrect password', status: 500 });
+        }
+    });
 });
 
 // router.get('/passwordreset', (req, res) => {
@@ -200,23 +214,23 @@ router.post('/register', function(req, res) {
 // // Handle a POST-request to /postsContent
 // router.post('/logout', userAuth.isAuthenticated, function(req, res){
 //     console.log('Server receives a POST request \'logout\' from posts.html');
-// 	//* TODO: Make more versatile:
+//     //* TODO: Make more versatile:
 //     var response = {success: false, message: ''};
-// 	req.session.destroy();
-// 	response.success = true;
+//     req.session.destroy();
+//     response.success = true;
 //     response.message = 'logged out';
 //     res.json(response);
 // });
 
 // router.post('/removePosts', userAuth.isAuthenticated, function(req, res){
-// 	console.log('Server receives a POST request \'removePosts\' from posts.html');
+//     console.log('Server receives a POST request \'removePosts\' from posts.html');
 
 //     postCounter = 0;
 
 //     Post.remove({})
-// 	.then(function(){
-// 	    return updateContent(req, res);
-// 	});
+//     .then(function(){
+//         return updateContent(req, res);
+//     });
 // });
 
 // router.post('/incrLike', userAuth.isAuthenticated, function(req, res){
@@ -287,31 +301,31 @@ router.post('/register', function(req, res) {
 //       userPhoto.mv('./client/img/' + filename, function(err) {
 //         //if no error
 //         if (!err){
-// 			var post1 = new Post({
-// 				userId: req.user.id,
-// 				image: './img/' + filename,
-// 				comment: 'Cool picture comment #' + (postCounter + 1) + '!',
-// 				likeCount: 0,
-// 				feedbackCount: 0
-// 			});
+//             var post1 = new Post({
+//                 userId: req.user.id,
+//                 image: './img/' + filename,
+//                 comment: 'Cool picture comment #' + (postCounter + 1) + '!',
+//                 likeCount: 0,
+//                 feedbackCount: 0
+//             });
 
-// 		    postCounter++;
+//             postCounter++;
 
-// 			// Promise.resolve()
-// 			// .then(function(){
-// 			    post1.save(function(err) {
-// 				  if (err) {
-// 				    console.log(err);
-// 				  }
-// 				  else {
-// 				    console.log('Post #' + postCounter + ' created!');
-// 				  }
-// 				})
-// 			// })
-// 			// .then(function(){
-// 			// 	// for (var i=0; i <100000; i++) console.log(i);
-// 			//     return updateContent(res);
-// 			// })
+//             // Promise.resolve()
+//             // .then(function(){
+//                 post1.save(function(err) {
+//                   if (err) {
+//                     console.log(err);
+//                   }
+//                   else {
+//                     console.log('Post #' + postCounter + ' created!');
+//                   }
+//                 })
+//             // })
+//             // .then(function(){
+//             //     // for (var i=0; i <100000; i++) console.log(i);
+//             //     return updateContent(res);
+//             // })
 //         } else {
 //           response.message = 'internal error';
 //           res.json(response);
@@ -328,23 +342,23 @@ router.post('/register', function(req, res) {
 // });
 
 // router.post('/getmenu', function(req, res) {
-// 	if (!req.isAuthenticated())
-// 	{
-// 	    console.log('Server receives a POST request \'getmenu\' and user is NOT authenticated');
-// 		res.json('<ul class="nav navbar-nav navbar-right">' +
-// 					'<li><a class="a_icon" href="javascript:ReplaceContentWith(\'join\')">Register</a></li>' +
-// 					'<li><a class="a_icon" href="javascript:ReplaceContentWith(\'signin\')">Sign In</a></li>' +
-// 				'</ul>')
-// 	}
-// 	else
-// 	{
-// 	    console.log('Server receives a POST request \'getmenu\' and user is authenticated');
-// 		res.json('<ul class="nav navbar-nav navbar-right">' +
-// 					'<li><a class="a_icon" href="javascript:ReplaceContentWith(\'posts\')"><img id="like" src="img/Like.png" alt="Like Button"></a></li>'+
-// 					'<li><a class="a_icon" href="javascript:ReplaceContentWith(\'profile\')"><img id="profile" src="img/Profile.png" alt="Profile Button"></a></li>' +
-// 					'<li><a class="a_icon" href="javascript:onLogout()">Logout</a></li>' +
-// 				'</ul>')
-// 	}
+//     if (!req.isAuthenticated())
+//     {
+//         console.log('Server receives a POST request \'getmenu\' and user is NOT authenticated');
+//         res.json('<ul class="nav navbar-nav navbar-right">' +
+//                     '<li><a class="a_icon" href="javascript:ReplaceContentWith(\'join\')">Register</a></li>' +
+//                     '<li><a class="a_icon" href="javascript:ReplaceContentWith(\'signin\')">Sign In</a></li>' +
+//                 '</ul>')
+//     }
+//     else
+//     {
+//         console.log('Server receives a POST request \'getmenu\' and user is authenticated');
+//         res.json('<ul class="nav navbar-nav navbar-right">' +
+//                     '<li><a class="a_icon" href="javascript:ReplaceContentWith(\'posts\')"><img id="like" src="img/Like.png" alt="Like Button"></a></li>'+
+//                     '<li><a class="a_icon" href="javascript:ReplaceContentWith(\'profile\')"><img id="profile" src="img/Profile.png" alt="Profile Button"></a></li>' +
+//                     '<li><a class="a_icon" href="javascript:onLogout()">Logout</a></li>' +
+//                 '</ul>')
+//     }
 // });
 
 server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function(){
