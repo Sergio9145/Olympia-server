@@ -32,9 +32,19 @@ router.use(express.static(path.resolve(__dirname, 'www')));
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
+
 router.post('/register', function(req, res) {
     var post = req.body;
 
+	var new_token = guid();
     var newUser = new User({
         firstName: post.firstName,
         lastName: post.lastName,
@@ -42,10 +52,11 @@ router.post('/register', function(req, res) {
         username: post.username,
         //password: hash.createHash(post.password)
         password: post.password,
+        login_token: new_token, // should be a unique string
         date: new Date(), // current time
         key: "42" // to be decided later
     });
-
+    
     newUser.save(function(err) {
       if (err) {
 		var msg1 = 'Something went wrong on the server';
@@ -53,8 +64,8 @@ router.post('/register', function(req, res) {
         res.status(500).send({ msg: msg1 });
       } else {
 		var msg2 = 'User ' + post.username + ' has been registered successfully';
-        console.log(msg2 + '. Password: ' + post.password);
-        res.status(200).send({ msg: msg2 });
+        console.log(msg2 + '. Password: ' + post.password + '. Token: ' + new_token);
+        res.status(200).send({ token: new_token });
       }
     });
 });
@@ -72,8 +83,8 @@ router.post('/login', function(req, res) {
     .then(function(user){
         if (user.password == currentUser.password) {
 	        var msg1 = 'User has logged in successfully';
-	        console.log(msg1);
-	        res.status(200).send({ msg: msg1 });
+	        console.log(msg1 + ". Token: " + user.login_token);
+	        res.status(200).send({ token: user.login_token });
         } else {
 			var msg2 = 'Incorrect password';
             console.log(msg2);
