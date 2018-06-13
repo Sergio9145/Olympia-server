@@ -42,61 +42,63 @@ function guid() {
 }
 
 router.post('/register', function(req, res) {
-	var post = req.body;
-
-	var new_token = guid();
-	var newUser = new User({
-		firstName: post.firstName,
-		lastName: post.lastName,
-		email: post.email,
-		username: post.username,
-		//password: hash.createHash(post.password)
-		password: post.password,
-		login_token: new_token, // should be a unique string
-		date: new Date(), // current time
-		key: "42" // to be decided later
-	});
-
-	newUser.save(function(err) {
-		if (err) {
-			var msg1 = 'Something went wrong on the server';
-			console.log(msg1 + ': ' + err);
+	User.findOne({ username: req.body.username })
+	.then(function(user) {
+		if (user) {
+			var msg1 = 'Username is not available';
+			console.log(msg1);
 			res.status(500).send({ msg: msg1 });
 		} else {
-			console.log('User ' + post.username + ' has been registered SUCCESSFULLY with Password: ' + post.password + ' and Token: ' + new_token);
-			res.status(200).send({ token: new_token });
+			var newToken = guid();
+			var newUser = new User({
+				firstName: req.body.firstName,
+				lastName: req.body.lastName,
+				email: req.body.email,
+				username: req.body.username,
+				//password: hash.createHash(req.body.password)
+				password: req.body.password,
+				loginToken: newToken, // should be a unique string
+				date: new Date(), // current time
+				key: "42" // to be decided later
+			});
+			
+			newUser.save(function(err) {
+				if (err) {
+					var msg1 = 'Could not be saved';
+					console.log(msg1 + ': ' + err);
+					res.status(500).send({ msg: msg1 });
+				} else {
+					console.log('User ' + req.body.username + ' has been registered successfully with Password: ' + req.body.password + ' and Token: ' + newToken);
+					res.status(200).send({ token: newToken });
+				}
+			});
 		}
 	});
 });
 
 router.post('/login', function(req, res) {
-	var post = req.body;
-
-	var currentUser = new User({
-		username: post.username,
-		//password: hash.createHash(post.password)
-		password: post.password
-	});
-
-	User.findOne({ username: currentUser.username })
+	User.findOne({ username: req.body.username })
 	.then(function(user) {
-		if (user.password == currentUser.password) {
-			console.log('User ' + post.username + ' has logged in SUCCESSFULLY with Password: ' + post.password + ' and was given Token: ' + user.login_token);
-			res.status(200).send({ token: user.login_token });
+		var msg1;
+		if (user) {
+			if (user.password == req.body.password) {
+				console.log('User ' + user.username + ' has logged in successfully with Password: ' + user.password + ' and was given Token: ' + user.loginToken);
+				res.status(200).send({ token: user.loginToken });
+			} else {
+				msg1 = 'Incorrect password';
+				console.log(msg1);
+				res.status(500).send({ msg: msg1 });
+			}
 		} else {
-			var msg2 = 'Incorrect password';
-			console.log(msg2);
-			res.status(400).send({ msg: msg2 });
+			msg1 = 'User not found';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });
 		}
 	});
 });
 
 router.post('/passwordreset', (req, res) => {
-	Promise.resolve()
-	.then(function() {
-		// see if there's a user with this email
-		return User.findOne({ email: req.body.email });
-	})
+	User.findOne({ email: req.body.email })
 	.then(function(user) {
 		if (user) {
 			var pr = new PasswordReset();
@@ -111,6 +113,10 @@ router.post('/passwordreset', (req, res) => {
 					res.status(200).send({ msg: 'Check the mail' });
 				}
 			});
+		} else {
+			var msg1 = 'User with such email not found';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });			
 		}
 	});
 });
@@ -118,10 +124,7 @@ router.post('/passwordreset', (req, res) => {
 router.get('/verifypassword', function(req, res) {
 	var password;
 
-	Promise.resolve()
-	.then(function() {
-		return PasswordReset.findOne({ id: req.body.id });
-	})
+	PasswordReset.findOne({ id: req.body.id })
 	.then(function(pr) {
 		if (pr) {
 			if (pr.expires > new Date()) {
