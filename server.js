@@ -43,9 +43,9 @@ function guid() {
 
 router.post('/register', function(req, res) {
 	User.findOne({ username: req.body.username })
-	.then(function(user) {
-		if (user) {
-			var msg1 = 'Username is not available';
+	.then(function(foundUser) {
+		if (foundUser) {
+			var msg1 = 'Username is not available or already exists';
 			console.log(msg1);
 			res.status(500).send({ msg: msg1 });
 		} else {
@@ -78,12 +78,12 @@ router.post('/register', function(req, res) {
 
 router.post('/login', function(req, res) {
 	User.findOne({ username: req.body.username })
-	.then(function(user) {
+	.then(function(foundUser) {
 		var msg1;
-		if (user) {
-			if (user.password == req.body.password) {
-				console.log('User ' + user.username + ' has logged in successfully with Password: ' + user.password + ' and was given Token: ' + user.loginToken);
-				res.status(200).send({ token: user.loginToken });
+		if (foundUser) {
+			if (foundUser.password == req.body.password) {
+				console.log('User ' + foundUser.username + ' has logged in successfully with Password: ' + foundUser.password + ' and was given Token: ' + foundUser.loginToken);
+				res.status(200).send({ token: foundUser.loginToken });
 			} else {
 				msg1 = 'Incorrect password';
 				console.log(msg1);
@@ -99,10 +99,10 @@ router.post('/login', function(req, res) {
 
 router.post('/passwordreset', (req, res) => {
 	User.findOne({ email: req.body.email })
-	.then(function(user) {
-		if (user) {
+	.then(function(foundUser) {
+		if (foundUser) {
 			var pr = new PasswordReset();
-			pr.email = user.email;
+			pr.email = foundUser.email;
 			// pr.password = hash.createHash(req.body.password);
 			pr.password = req.body.password;
 			pr.expires = new Date((new Date()).getTime() + (20 * 60 * 1000));
@@ -141,69 +141,121 @@ router.get('/verifypassword', function(req, res) {
 		}
 	})
 	.then(function() {
-		res.sendfile(path.join(__dirname, 'www', 'passwordReset.html'));
+		PasswordReset.deleteOne({ id: req.body.id })
+			.then(function() {
+				res.sendfile(path.join(__dirname, 'www', 'passwordReset.html'));
+			});
 	});
 });
 
 router.post('/changename', function(req, res) {
 	User.findOne({ username: req.body.username })
 	.then(function(foundUser) {
-		if (foundUser.password == req.body.password) {
-			User.updateOne({ username: req.body.username }, { firstName: req.body.firstName, lastName: req.body.lastName }, function(err, res) {
-				if (err) throw err;
-				console.log("1 record updated");
-			});
-			User.findOne({ username: req.body.username })
-			.then(function(newUser) {
-				console.log('User\'s first name and last names were successfully changed to ' + newUser.firstName + ' ' + newUser.lastName);
-				res.status(200).send({ firstName: newUser.firstName, lastName: newUser.lastName });
-			});
-	}});
+		var msg1;
+		if (foundUser) {
+			if (foundUser.password == req.body.password) {
+				User.updateOne({ username: req.body.username }, { firstName: req.body.firstName, lastName: req.body.lastName }, function(err, res) {
+					if (err) throw err;
+					console.log("1 record updated");
+				});
+				User.findOne({ username: req.body.username })
+				.then(function(newUser) {
+					console.log('User\'s first name and last names were successfully changed to ' + newUser.firstName + ' ' + newUser.lastName);
+					res.status(200).send({ firstName: newUser.firstName, lastName: newUser.lastName });
+				});
+			} else {
+				msg1 = 'Incorrect password';
+				console.log(msg1);
+				res.status(500).send({ msg: msg1 });
+			}
+		} else {
+			msg1 = 'User not found';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });	
+		}
+	});
 });
 
 router.post('/changeemail', function(req, res) {
 	User.findOne({ username: req.body.username })
 	.then(function(foundUser) {
-		if (foundUser.password == req.body.password) {
-			User.updateOne({ username: req.body.username }, { email: req.body.email}, function(err, res) {
-				if (err) throw err;
-				console.log("1 record updated");
-			});
-			User.findOne({ username: req.body.username })
-			.then(function(newUser) {
-				console.log('User\'s email was successfully changed to ' + newUser.email);
-				res.status(200).send({ email: newUser.email });
-			});
-	}});
+		var msg1;
+		if (foundUser) {
+			if (foundUser.password == req.body.password) {
+				User.updateOne({ username: req.body.username }, { email: req.body.email}, function(err, res) {
+					if (err) throw err;
+					console.log("1 record updated");
+				});
+				User.findOne({ username: req.body.username })
+				.then(function(newUser) {
+					console.log('User\'s email was successfully changed to ' + newUser.email);
+					res.status(200).send({ email: newUser.email });
+				});
+			} else {
+				msg1 = 'Incorrect password';
+				console.log(msg1);
+				res.status(500).send({ msg: msg1 });
+			}
+		} else {
+			msg1 = 'User not found';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });
+		}
+		
+	});
 });
 
 router.post('/changepassword', function(req, res) {
 	User.findOne({ username: req.body.username })
 	.then(function(foundUser) {
-		if (foundUser.password == req.body.password) {
-			User.updateOne({ username: req.body.username }, { password: req.body.newpassword }, function(err, res) {
-				if (err) throw err;
-				console.log("1 record updated");
-			});
-			User.findOne({ username: req.body.username })
-			.then(function(newUser) {
-				console.log('User\'s password was successfully changed to ' + newUser.password);
-				res.status(200).send({	 });
-			});
-	}});
+		var msg1;
+		if (foundUser) {
+			if (foundUser.password == req.body.password) {
+				User.updateOne({ username: req.body.username }, { password: req.body.newpassword }, function(err, res) {
+					if (err) throw err;
+					console.log("1 record updated");
+				});
+				User.findOne({ username: req.body.username })
+				.then(function(newUser) {
+					console.log('User\'s password was successfully changed to ' + newUser.password);
+					res.status(200).send({	 });
+				});
+			} else {
+				msg1 = 'Incorrect password';
+				console.log(msg1);
+				res.status(500).send({ msg: msg1 });
+			}
+		} else {
+			msg1 = 'User not found';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });
+		}
+	});
 });
 
 router.post('/deleteaccount', function(req, res) {
 	User.findOne({ username: req.body.username })
 	.then(function(foundUser) {
-		if (foundUser.password == req.body.password) {
-			User.deleteOne({ username: req.body.username })
-			.then(function () {
-				console.log("1 record deleted");
-				console.log('User\'s account was successfully deleted');
-				res.status(200).send({	 });
-			});
-	}});
+		var msg1;
+		if (foundUser) {
+			if (foundUser.password == req.body.password) {
+				User.deleteOne({ username: req.body.username })
+				.then(function() {
+					console.log("1 record deleted");
+					console.log('User\'s account was successfully deleted');
+					res.status(200).send({	 });
+				});
+			} else {
+				msg1 = 'Incorrect password';
+				console.log(msg1);
+				res.status(500).send({ msg: msg1 });
+			}
+		} else {
+			msg1 = 'User not found';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });
+		}
+	});
 });
 
 server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function() {
