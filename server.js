@@ -120,7 +120,7 @@ router.get('/verifypassword', function(req, res) {
 
 	Promise.resolve()
 	.then(function() {
-		return PasswordReset.findOne({id: req.body.id});
+		return PasswordReset.findOne({ id: req.body.id });
 	})
 	.then(function(pr) {
 		if (pr) {
@@ -178,13 +178,26 @@ router.post('/changepassword', function(req, res) {
 	User.findOne({ username: req.body.username })
 	.then(function(foundUser) {
 		if (foundUser.password == req.body.password) {
-			User.updateOne({ username: req.body.username }, { password: req.body.password }, function(err, res) {
+			User.updateOne({ username: req.body.username }, { password: req.body.newpassword }, function(err, res) {
 				if (err) throw err;
 				console.log("1 record updated");
 			});
 			User.findOne({ username: req.body.username })
 			.then(function(newUser) {
-				console.log('User\'s was successfully changed to ' + newUser.password);
+				console.log('User\'s password was successfully changed to ' + newUser.password);
+				res.status(200).send({	 });
+			});
+	}});
+});
+
+router.post('/deleteaccount', function(req, res) {
+	User.findOne({ username: req.body.username })
+	.then(function(foundUser) {
+		if (foundUser.password == req.body.password) {
+			User.deleteOne({ username: req.body.username })
+			.then(function () {
+				console.log("1 record deleted");
+				console.log('User\'s account was successfully deleted');
 				res.status(200).send({	 });
 			});
 	}});
