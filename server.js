@@ -15,6 +15,7 @@ const bodyParser = require('body-parser');
 // database
 const mongoose = require('mongoose');
 const User = require('./models/User.js');
+const Admin = require('./models/Admin.js');
 const PasswordReset = require('./models/PasswordReset.js');
 // sendmail
 const email = require('./js/send_mail.js');
@@ -254,6 +255,41 @@ router.post('/deleteaccount', function(req, res) {
 			msg1 = 'User not found';
 			console.log(msg1);
 			res.status(500).send({ msg: msg1 });
+		}
+	});
+});
+
+
+router.get('/', function(req, res){
+	console.log('Home page is set to Admin Login');
+	res.sendFile(path.join(__dirname, 'www', 'adminLogin.html'));
+});
+
+router.get('/privacypolicy', function(req, res){
+	console.log('privacypolicy request');
+	res.sendFile(path.join(__dirname, 'www', 'privacyPolicy.html'));
+});
+
+router.get('/termsandconditions', function(req, res){
+	console.log('termsandconditions request');
+	res.sendFile(path.join(__dirname, 'www', 'termsAndConditions.html'));
+});
+
+router.post('/admin-login', function(req, res, next) {
+	console.log('Login attempted');
+	Admin.findOne({ username: req.body.username })
+	.then(function(foundUser) {
+		var msg1;
+		if (foundUser) {
+			if (foundUser.password == req.body.password) {
+				console.log('Admin logged in successfully');
+			} else {
+				msg1 = 'Incorrect password';
+				console.log(msg1);
+			}
+		} else {
+			msg1 = 'Admin not found';
+			console.log(msg1);
 		}
 	});
 });

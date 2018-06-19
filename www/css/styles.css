@@ -12,3 +12,35 @@
   color: white;
   font-family: 'Quicksand', sans-serif;
 }
+
+
+#header-section {
+  background-color: #004225;
+}
+
+#olympia-icon {
+  float:left;
+  margin-right: 20px;
+}
+
+#main-title {
+  color: white;
+  font-family: 'Quicksand', sans-serif;
+}
+
+#body-section {
+    background-color: #e4e4d3;
+    height: 100vh;
+}
+.main {
+    margin-left: 100pt;
+    padding-top: 100pt;
+}
+
+.form-control {
+    max-width: 200px;
+}
+
+.input-form {
+    max-width: 65%;
+}

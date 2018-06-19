@@ -6,7 +6,7 @@
   "repository": "",
   "author": "Sergiy Opryshko (#7759145) sopryshko9145@conestogac.on.ca",
   "dependencies": {
-    "express": "~3.2.4",
+    "express": "~4.8.0",
     "mongodb": "^2.2.27",
     "mongoose": "^4.10.3",
     "bcrypt-nodejs": "0.0.3",
