@@ -27,6 +27,7 @@
             if (username.length > 0 && password.length > 0) {
 		        Promise.resolve()
 		        .then(function(){
+					//the 'return' is required. Otherwise, the subsequent then will not wait for this to complete
 		            return $.post('admin-login', 'username=' + username + '&password=' + password);
 		        })
 		        .then(function(auth){
@@ -60,7 +61,6 @@
 		function createAdminsTable() {
             Promise.resolve()
             .then(function(){
-                //the 'return' is required. Otherwise, the subsequent then will not wait for this to complete
                 return $.post('admin-get-admins');
             })
             .then(function(admins){
@@ -100,7 +100,6 @@
 		function createKeysTable() {
             Promise.resolve()
             .then(function(){
-                //the 'return' is required. Otherwise, the subsequent then will not wait for this to complete
                 return $.post('admin-get-keys');
             })
             .then(function(keys){
@@ -141,7 +140,6 @@
             //start a promise chain
             Promise.resolve()
             .then(function(){
-                //the 'return' is required. Otherwise, the subsequent then will not wait for this to complete
                 return $.post('admin-get-users');
             })
             .then(function(users){
@@ -177,6 +175,32 @@
                 console.log(err);
             });
         }
+
+        function addAdmin() {
+			$("#admins-content").load("addAdmin.html");
+        }
+        function onAddAdmin() {
+			var firstname = $('#new_admin_firstname').val();
+            var lastname = $('#new_admin_lastname').val();
+			var username = $('#new_admin_username').val();
+            var password = $('#new_admin_password').val();
+
+            Promise.resolve()
+            .then(function(){
+                return $.post('admin-add-admin', 'firstname=' + firstname + '&lastname=' + lastname + '&username=' + username + '&password=' + password);
+            })
+            .then(function(admins){
+		        $("#adminsList").load("adminsList.html");
+		        createAdminsTable();
+            })
+            .catch(function(err){
+                console.log(err);
+            });
+        }
+        function onAddAdminCancel() {
+	        $("#adminsList").load("adminsList.html");
+	        createAdminsTable();
+        }
 	</script>
 </head>
   
@@ -191,27 +215,26 @@
 
     <section id="body-section">
 		<div class="container" id="adminsList">
-			<div class="main">
-				<div class="form-group">
-					<label >Username</label>
-					<input type="text" class="form-control" id="username" placeholder="Username">
+			<center>
+				<div style="padding-top: 100pt;">
+					<label>Sign in</label>
+					<div class="form-group">
+						<input type="text" class="form-control" id="username" placeholder="Username">
+					</div>
+					<div class="form-group">
+						<input type="password" class="form-control" id="password" placeholder="Password">
+					</div>
+					<div class="form-group">
+						<button class="btn btn-primary" onclick='handleLoginAttempt()'>Login</button>
+					</div>
+					<p id="error"></p>
 				</div>
-				<div class="form-group">
-					<label>Password</label>
-					<input type="password" class="form-control" id="password" placeholder="Password">
-				</div>
-				<div class="form-group">
-					<button class="btn btn-primary" onclick='handleLoginAttempt()'>Login</button>
-				</div>
-				<p id="error"></p>
-			</div>
+			</center>
 		</div>
-		<div class="container" id="keysList">
-			
-		</div>
-		<div class="container" id="usersList">
-			
-		</div>
+
+		<div class="container" id="keysList"></div>
+
+		<div class="container" id="usersList"></div>
     </section>
     
   </body>

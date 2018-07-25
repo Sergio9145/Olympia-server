@@ -318,82 +318,131 @@ router.get('/termsandconditions', function(req, res){
 //						ADMINISTRATION REQUESTS
 // -----------------------------------------------------------------
 router.get('/', function(req, res){
+	var defaultAdmin = new Admin({
+		firstname: 'John',
+		lastname: 'Doe',
+		username: 'admin',
+		password: 'admin'
+	});
+
+	Admin.findOne({ username: defaultAdmin.username })
+	.then(function(foundUser) {
+		if (foundUser) {
+			console.log('Default admin already exists');
+		} else {
+			defaultAdmin.save(function(err) {
+				if (err) {
+					console.log('Default admin/admin record could not be saved: ' + err);
+				} else {
+					console.log('Default admin/admin record created');
+				}
+			});
+		}
+	});
+
 	res.sendFile(path.join(__dirname, 'www', 'adminPanel.html'));
 });
 
 router.post('/admin-login', function(req, res, next) {
-  //tell passport to attempt to authenticate the login
-  passport.authenticate('login', function(err, user, info) {
-    //callback returns here
-    if (err){
-      //if error, say error
-      res.json({isValid: false, message: 'Internal error'});
-    } else if (!user) {
-      //if no user, say invalid login
-      res.json({isValid: false, message: 'Invalid user. Try again.'});
-    } else {
-      //log this user in
-      req.logIn(user, function(err){
-        if (!err)
-          //send a message to the client to say so
-          res.json({isValid: true, message: 'Welcome, ' + user.username + '.'});
-      });
-    }
-  })(req, res, next);
+	//tell passport to attempt to authenticate the login
+	passport.authenticate('login', function(err, user, info) {
+		//callback returns here
+		if (err){
+			//if error, say error
+			res.json({isValid: false, message: 'Internal error'});
+		} else if (!user) {
+			//if no user, say invalid login
+			res.json({isValid: false, message: 'Invalid user. Try again.'});
+		} else {
+			//log this user in
+			req.logIn(user, function(err){
+				if (!err)
+					//send a message to the client to say so
+					res.json({isValid: true, message: 'Welcome, ' + user.username + '.'});
+			});
+		}
+	})(req, res, next);
 });
 
 router.post('/admin-get-admins', function(req, res){
-  console.log('Admin requests admins list');
-  var allAdmins;
-  Admin.find({})
-  .then(function(admins){
-    allAdmins = admins;
-    var promises = [];
-    allAdmins.forEach(function(user){
-      promises.push();
-    });
-    return Promise.all(promises);
-  })
-  .then(function(){
-    //send them to the client in JSON format
-    res.json(allAdmins);
-  });
+	var allAdmins;
+	Admin.find({})
+	.then(function(admins){
+		allAdmins = admins;
+		var promises = [];
+		allAdmins.forEach(function(user){
+			promises.push();
+		});
+		return Promise.all(promises);
+	})
+	.then(function(){
+		//send them to the client in JSON format
+		res.json(allAdmins);
+	});
 });
 
 router.post('/admin-get-keys', function(req, res){
-  console.log('Admin requests keys list');
-  var allKeys;
-  Key.find({})
-  .then(function(keys){
-    allKeys = keys;
-    var promises = [];
-    allKeys.forEach(function(user){
-      promises.push();
-    });
-    return Promise.all(promises);
-  })
-  .then(function(){
-    //send them to the client in JSON format
-    res.json(allKeys);
-  });
+	var allKeys;
+	Key.find({})
+	.then(function(keys){
+		allKeys = keys;
+		var promises = [];
+		allKeys.forEach(function(user){
+			promises.push();
+		});
+		return Promise.all(promises);
+	})
+	.then(function(){
+		//send them to the client in JSON format
+		res.json(allKeys);
+	});
 });
 
 router.post('/admin-get-users', function(req, res){
-  console.log('Admin requests users list');
-  var allUsers;
-  User.find({})
-  .then(function(users){
-    allUsers = users;
-    var promises = [];
-    allUsers.forEach(function(user){
-      promises.push();
-    });
-    return Promise.all(promises);
-  })
-  .then(function(){
-    //send them to the client in JSON format
-    res.json(allUsers);
-  });
+	var allUsers;
+	User.find({})
+	.then(function(users){
+		allUsers = users;
+		var promises = [];
+		allUsers.forEach(function(user){
+			promises.push();
+		});
+		return Promise.all(promises);
+	})
+	.then(function(){
+		//send them to the client in JSON format
+		res.json(allUsers);
+	});
+});
+
+router.post('/admin-add-admin', function(req, res) {
+	Admin.findOne({ username: req.body.username })
+	.then(function(foundUser) {
+		if (foundUser) {
+			var msg1 = 'Username is not available or already exists';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });
+		} else {
+			var newUser = new Admin({
+				firstname: req.body.firstname,
+				lastname: req.body.lastname,
+				username: req.body.username,
+				password: req.body.password
+			});
+
+			newUser.save(function(err) {
+				if (err) {
+					var msg1 = 'Could not be saved';
+					console.log(msg1 + ': ' + err);
+					res.status(500).send({ msg: msg1 });
+				} else {
+					var msg1 = 'Admin ' + req.body.username + ' has been registered successfully with Password: ' + req.body.password;
+					console.log(msg1);
+					res.status(200).send({ msg: msg1 });
+				}
+			});
+		}
+	});
 });
 
 server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function() {

@@ -3,6 +3,8 @@ var mongoose = require('mongoose');
 
 //we're building a POST object model in mongoose that we'll use elsewhere
 module.exports = mongoose.model('Admin', {
+	firstname: String,
+	lastname: String,
     username: String,
     password: String
 });
