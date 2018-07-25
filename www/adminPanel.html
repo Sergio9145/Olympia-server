@@ -65,14 +65,17 @@
             })
             .then(function(admins){
                 $('#admins').html('');
+                $('#admins').append(
+                '<tr>' +
+                '<td><b>Username</b></td><td><b>First name</b></td><td><b>Last name</b></td>' +
+                '</tr>');
                 admins.forEach(function(entity){
                     $('#admins').append(
                         '<tbody>' +
                         '<tr>' +
-                        '<td class="checkbox-col">' +
-                        '<input type="checkbox" style="text-align:center;" ng-model="x.dedbuffer"' +
-                        '</td>' +
-                        '<td data-userId="' + entity._id + '">' + entity.username + '</td>' +
+                        '<td data-userId="' + entity._id + '"><a href="javascript:modifyAdmin(\'' + entity.firstname + '\', \'' + entity.lastname + '\', \'' + entity.username + '\', \'' + entity.password + '\')">' + entity.username + '</a></td>' +
+                        '<td>' + entity.firstname + '</td>' +
+                        '<td>' + entity.lastname + '</td>' +
                         '</tr>' +
                         '</tbody>'
                     );
@@ -80,11 +83,6 @@
             })
             .then(function(){
 	            $('#admins').DataTable({
-					columnDefs: [ {
-			            orderable: false,
-			            className: 'select-checkbox',
-			            targets:   0
-		            } ],
 		            select: {
 			            style:    'os',
 			            selector: 'td:first-child'
@@ -198,6 +196,37 @@
             });
         }
         function onAddAdminCancel() {
+	        $("#adminsList").load("adminsList.html");
+	        createAdminsTable();
+        }
+
+        function modifyAdmin(firstname, lastname, username, password) {
+			$("#admins-content").load("modifyAdmin.html", function() {
+				$('#new_admin_firstname').val(firstname);
+				$('#new_admin_lastname').val(lastname);
+				$('#new_admin_username').val(username);
+				$('#new_admin_password').val(password);
+			});
+        }
+        function onModifyAdmin() {
+			var firstname = $('#new_admin_firstname').val();
+            var lastname = $('#new_admin_lastname').val();
+			var username = $('#new_admin_username').val();
+            var password = $('#new_admin_password').val();
+
+            Promise.resolve()
+            .then(function(){
+                return $.post('admin-modify-admin', 'firstname=' + firstname + '&lastname=' + lastname + '&username=' + username + '&password=' + password);
+            })
+            .then(function(admins){
+		        $("#adminsList").load("adminsList.html");
+		        createAdminsTable();
+            })
+            .catch(function(err){
+                console.log(err);
+            });
+        }
+        function onModifyAdminCancel() {
 	        $("#adminsList").load("adminsList.html");
 	        createAdminsTable();
         }

@@ -445,6 +445,63 @@ router.post('/admin-add-admin', function(req, res) {
 	});
 });
 
+router.post('/admin-add-admin', function(req, res) {
+	Admin.findOne({ username: req.body.username })
+	.then(function(foundUser) {
+		if (foundUser) {
+			var msg1 = 'Username is not available or already exists';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });
+		} else {
+			var newUser = new Admin({
+				firstname: req.body.firstname,
+				lastname: req.body.lastname,
+				username: req.body.username,
+				password: req.body.password
+			});
+
+			newUser.save(function(err) {
+				if (err) {
+					var msg1 = 'Could not be saved';
+					console.log(msg1 + ': ' + err);
+					res.status(500).send({ msg: msg1 });
+				} else {
+					var msg1 = 'Admin ' + req.body.username + ' has been added successfully with Password: ' + req.body.password;
+					console.log(msg1);
+					res.status(200).send({ msg: msg1 });
+				}
+			});
+		}
+	});
+});
+
+router.post('/admin-modify-admin', function(req, res) {
+	Admin.findOne({ username: req.body.username })
+	.then(function(foundUser) {
+		if (foundUser) {
+			foundUser.firstname = req.body.firstname;
+			foundUser.lastname = req.body.lastname;
+			foundUser.password = req.body.password;
+
+			foundUser.save(function(err) {
+				if (err) {
+					var msg1 = 'Could not be saved';
+					console.log(msg1 + ': ' + err);
+					res.status(500).send({ msg: msg1 });
+				} else {
+					var msg1 = 'Admin ' + req.body.username + ' record was successfully updated';
+					console.log(msg1);
+					res.status(200).send({ msg: msg1 });
+				}
+			});
+		} else {
+			var msg1 = 'Username was not found';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });
+		}
+	});
+});
+
 server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function() {
 	console.log("Olympia ready!");
 });

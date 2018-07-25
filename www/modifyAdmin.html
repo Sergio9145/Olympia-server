@@ -1,0 +1,19 @@
+<label>Please, fill all the fields:</label>
+<div class="form-group">
+	<input type="text" class="form-control" id="new_admin_firstname" placeholder="First name">
+</div>
+<div class="form-group">
+	<input type="text" class="form-control" id="new_admin_lastname" placeholder="Last name">
+</div>
+<div class="form-group">
+	<input type="text" class="form-control" id="new_admin_username" placeholder="Username" readonly>
+</div>
+<div class="form-group">
+	<input type="password" class="form-control" id="new_admin_password" placeholder="Password">
+</div>
+<div class="form-group">
+	<button class="btn btn-primary" onclick='onDeleteAdmin()'>DELETE record</button>
+	<button class="btn btn-primary" onclick='onModifyAdmin()'>Modify record</button>
+	<button class="btn btn-primary" onclick='onModifyAdminCancel()'>Cancel</button>
+</div>
+<p id="error"></p>
