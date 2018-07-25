@@ -22,6 +22,7 @@ const userAuth = require('./js/user_auth.js');
 
 const User = require('./models/User.js');
 const Admin = require('./models/Admin.js');
+const Key = require('./models/Key.js');
 const PasswordReset = require('./models/PasswordReset.js');
 // sendmail
 const email = require('./js/send_mail.js');
@@ -341,11 +342,45 @@ router.post('/admin-login', function(req, res, next) {
   })(req, res, next);
 });
 
+router.post('/admin-get-admins', function(req, res){
+  console.log('Admin requests admins list');
+  var allAdmins;
+  Admin.find({})
+  .then(function(admins){
+    allAdmins = admins;
+    var promises = [];
+    allAdmins.forEach(function(user){
+      promises.push();
+    });
+    return Promise.all(promises);
+  })
+  .then(function(){
+    //send them to the client in JSON format
+    res.json(allAdmins);
+  });
+});
+
+router.post('/admin-get-keys', function(req, res){
+  console.log('Admin requests keys list');
+  var allKeys;
+  Key.find({})
+  .then(function(keys){
+    allKeys = keys;
+    var promises = [];
+    allKeys.forEach(function(user){
+      promises.push();
+    });
+    return Promise.all(promises);
+  })
+  .then(function(){
+    //send them to the client in JSON format
+    res.json(allKeys);
+  });
+});
+
 router.post('/admin-get-users', function(req, res){
   console.log('Admin requests users list');
-  //go find all the posts in the database
   var allUsers;
-  //go find all the posts in the database
   User.find({})
   .then(function(users){
     allUsers = users;
