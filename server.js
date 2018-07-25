@@ -14,6 +14,12 @@ const bodyParser = require('body-parser');
 // const hash = require('./js/hash.js');
 // database
 const mongoose = require('mongoose');
+// session
+const session = require('express-session');  
+const mongoSession = require('connect-mongodb-session')(session);
+const passport = require('passport');
+const userAuth = require('./js/user_auth.js');
+
 const User = require('./models/User.js');
 const Admin = require('./models/Admin.js');
 const PasswordReset = require('./models/PasswordReset.js');
@@ -25,6 +31,11 @@ var server = http.createServer(router);
 
 // establish database connection
 mongoose.connect(mongoURL);
+// create a sessions collection as well
+var mongoSessionStore = new mongoSession({
+    uri: mongoURL,
+    collection: 'sessions'
+});
 
 // tell the router (ie. express) where to find static files
 router.use(express.static(path.resolve(__dirname, 'www')));
@@ -32,6 +43,18 @@ router.use(express.static(path.resolve(__dirname, 'www')));
 // tell the router to parse JSON data for us and put it into req.body
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
+
+// add session support
+router.use(session({
+  secret: process.env.SESSION_SECRET || 'Houston, We h@ve a pr0b1em!',
+  store: mongoSessionStore,
+  resave: true,
+  saveUninitialized: false
+}));
+// add passport for authentication support
+router.use(passport.initialize());
+router.use(passport.session());
+userAuth.init(passport);
 
 function guid() {
 	function s4() {
@@ -51,6 +74,10 @@ router.post('/register', function(req, res) {
 			res.status(500).send({ msg: msg1 });
 		} else {
 			var newToken = guid();
+			var trial_days = 5;
+			var now = new Date();
+			var exp = new Date();
+			exp.setDate(exp.getDate() + trial_days);
 			var newUser = new User({
 				firstName: req.body.firstName,
 				lastName: req.body.lastName,
@@ -59,8 +86,9 @@ router.post('/register', function(req, res) {
 				//password: hash.createHash(req.body.password)
 				password: req.body.password,
 				loginToken: newToken, // should be a unique string
-				date: new Date(), // current time
-				key: "42" // to be decided later
+				dateRegistered: now, // current time
+				key: guid(),
+				expiresDate: exp
 			});
 			
 			newUser.save(function(err) {
@@ -259,10 +287,20 @@ router.post('/deleteaccount', function(req, res) {
 	});
 });
 
-
-router.get('/', function(req, res){
-	console.log('Home page is set to Admin Login');
-	res.sendFile(path.join(__dirname, 'www', 'adminLogin.html'));
+router.post('/getkey', function(req, res) {
+	User.findOne({ username: req.body.username })
+	.then(function(foundUser) {
+		var msg1;
+		if (foundUser) {
+			console.log('User\'s key is ' + foundUser.key + ' expires on ' + foundUser.expiresDate);
+			var millis = foundUser.expiresDate.getTime();
+			res.status(200).send({ key: foundUser.key, expiresDate: millis });
+		} else {
+			msg1 = 'User not found';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });
+		}
+	});
 });
 
 router.get('/privacypolicy', function(req, res){
@@ -275,23 +313,52 @@ router.get('/termsandconditions', function(req, res){
 	res.sendFile(path.join(__dirname, 'www', 'termsAndConditions.html'));
 });
 
+// -----------------------------------------------------------------
+//						ADMINISTRATION REQUESTS
+// -----------------------------------------------------------------
+router.get('/', function(req, res){
+	res.sendFile(path.join(__dirname, 'www', 'adminPanel.html'));
+});
+
 router.post('/admin-login', function(req, res, next) {
-	console.log('Login attempted');
-	Admin.findOne({ username: req.body.username })
-	.then(function(foundUser) {
-		var msg1;
-		if (foundUser) {
-			if (foundUser.password == req.body.password) {
-				console.log('Admin logged in successfully');
-			} else {
-				msg1 = 'Incorrect password';
-				console.log(msg1);
-			}
-		} else {
-			msg1 = 'Admin not found';
-			console.log(msg1);
-		}
-	});
+  //tell passport to attempt to authenticate the login
+  passport.authenticate('login', function(err, user, info) {
+    //callback returns here
+    if (err){
+      //if error, say error
+      res.json({isValid: false, message: 'Internal error'});
+    } else if (!user) {
+      //if no user, say invalid login
+      res.json({isValid: false, message: 'Invalid user. Try again.'});
+    } else {
+      //log this user in
+      req.logIn(user, function(err){
+        if (!err)
+          //send a message to the client to say so
+          res.json({isValid: true, message: 'Welcome, ' + user.username + '.'});
+      });
+    }
+  })(req, res, next);
+});
+
+router.post('/admin-get-users', function(req, res){
+  console.log('Admin requests users list');
+  //go find all the posts in the database
+  var allUsers;
+  //go find all the posts in the database
+  User.find({})
+  .then(function(users){
+    allUsers = users;
+    var promises = [];
+    allUsers.forEach(function(user){
+      promises.push();
+    });
+    return Promise.all(promises);
+  })
+  .then(function(){
+    //send them to the client in JSON format
+    res.json(allUsers);
+  });
 });
 
 server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function() {

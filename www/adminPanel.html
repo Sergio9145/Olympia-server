@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" ng-app>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <title>Olympia Administration</title>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Quicksand|Varela+Round">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css">
+    
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    
+    <script type="text/javascript">
+    	/*global $*/
+        
+        function handleLoginAttempt() {
+            var username = $('#username').val();
+            var password = $('#password').val();
+            
+            if (username.length > 0 && password.length > 0) {
+		        Promise.resolve()
+		        .then(function(){
+		            return $.post('admin-login', 'username=' + username + '&password=' + password);
+		        })
+		        .then(function(auth){
+		            if (auth.isValid){
+		                $('#error').html(auth.message);
+		                
+		                $("#body-section").load("usersList.html");
+		                createUsersTable();
+		                return;
+		            } else {
+		                $('#error').html(auth.message);
+		                $('#username').html('bad');
+		                $('#password').html('bad');
+		            }
+		        })
+		        .catch(function(err){
+		            console.log(err);
+		        });
+		    } else {
+		        $('#error').html('Please provide both username and password');
+		    }
+        }
+            
+    	function createUsersTable() {
+            //start a promise chain
+            Promise.resolve()
+            .then(function(){
+                //the 'return' is required. Otherwise, the subsequent then will not wait for this to complete
+                return $.post('admin-get-users');  
+            })
+            .then(function(users){
+                $('#users').html('');
+                users.forEach(function(user){
+                    $('#users').append(
+                        '<tbody>' +
+                        '<tr>' +
+                        '<td class="checkbox-col">' +
+                        '<input type="checkbox" style="text-align:center;" ng-model="x.dedbuffer"' +
+                        '</td>' +
+                        '<td data-userId="' + user._id + '">' + user.username + '</td>' +
+                        '</tr>' +
+                        '</tbody>' 
+                    );
+                });
+            })
+            .then(function(){
+	            $('#users').DataTable({
+		        	columnDefs: [ {
+			            orderable: false,
+			            className: 'select-checkbox',
+			            targets:   0
+		            } ],
+		            select: {
+			            style:    'os',
+			            selector: 'td:first-child'
+		            },
+		            order: [[ 1, 'asc' ]]
+	            });            	
+            })
+            .catch(function(err){
+                console.log(err);
+            });
+        }
+	</script>
+  </head>
+  
+  <body>
+    <section id="header-section">
+      <div class="container">
+        <div class="header">
+          <h1 id="main-title">Olympia</h1>
+        </div>
+      </div>
+    </section>
+
+    <section id="body-section">
+      <div class="container">
+        <div class="main">
+          <div class="form-group">
+            <label >Username</label>
+            <input type="text" class="form-control" id="username" placeholder="Username">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Password">
+          </div>
+          <div class="form-group">
+          	<button class="btn btn-primary" onclick='handleLoginAttempt()'>Login</button>
+      	  </div>
+          <p id="error"></p>
+        </div>
+      </div>
+    </section>
+    
+  </body>
+</html>

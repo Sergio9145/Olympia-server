@@ -10,5 +10,6 @@ module.exports = mongoose.model('User', {
     password: String, //this will be the hashed value of the password
     loginToken: String,
     dateRegistered: Date,
-    key: String
+    key: String,
+    expiresDate : Date
 });
