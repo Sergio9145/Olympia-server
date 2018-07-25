@@ -364,7 +364,7 @@ router.post('/admin-login', function(req, res, next) {
 	})(req, res, next);
 });
 
-router.post('/admin-get-admins', function(req, res){
+router.post('/admin-get-admins', userAuth.isAuthenticated, function(req, res){
 	var allAdmins;
 	Admin.find({})
 	.then(function(admins){
@@ -381,7 +381,7 @@ router.post('/admin-get-admins', function(req, res){
 	});
 });
 
-router.post('/admin-get-keys', function(req, res){
+router.post('/admin-get-keys', userAuth.isAuthenticated, function(req, res){
 	var allKeys;
 	Key.find({})
 	.then(function(keys){
@@ -398,7 +398,7 @@ router.post('/admin-get-keys', function(req, res){
 	});
 });
 
-router.post('/admin-get-users', function(req, res){
+router.post('/admin-get-users', userAuth.isAuthenticated, function(req, res){
 	var allUsers;
 	User.find({})
 	.then(function(users){
@@ -415,7 +415,7 @@ router.post('/admin-get-users', function(req, res){
 	});
 });
 
-router.post('/admin-add-admin', function(req, res) {
+router.post('/admin-add-admin', userAuth.isAuthenticated, function(req, res) {
 	Admin.findOne({ username: req.body.username })
 	.then(function(foundUser) {
 		if (foundUser) {
@@ -445,7 +445,7 @@ router.post('/admin-add-admin', function(req, res) {
 	});
 });
 
-router.post('/admin-add-admin', function(req, res) {
+router.post('/admin-add-admin', userAuth.isAuthenticated, function(req, res) {
 	Admin.findOne({ username: req.body.username })
 	.then(function(foundUser) {
 		if (foundUser) {
@@ -475,7 +475,7 @@ router.post('/admin-add-admin', function(req, res) {
 	});
 });
 
-router.post('/admin-modify-admin', function(req, res) {
+router.post('/admin-modify-admin', userAuth.isAuthenticated, function(req, res) {
 	Admin.findOne({ username: req.body.username })
 	.then(function(foundUser) {
 		if (foundUser) {
