@@ -502,6 +502,19 @@ router.post('/admin-modify-admin', userAuth.isAuthenticated, function(req, res) 
 	});
 });
 
+router.post('/admin-delete-admin', userAuth.isAuthenticated, function(req, res){
+	Admin.findOne({ username: req.body.username })
+	.then(function(foundUser) {
+
+	    Admin.remove(foundUser)
+		.then(function(){
+			var msg1 = 'Admin ' + req.body.username + ' record was successfully removed';
+			console.log(msg1);
+			res.status(200).send({ msg: msg1 });
+		});
+	});
+});
+
 server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function() {
 	console.log("Olympia ready!");
 });

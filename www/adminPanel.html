@@ -226,6 +226,21 @@
                 console.log(err);
             });
         }
+        function onDeleteAdmin() {
+			var username = $('#new_admin_username').val();
+
+            Promise.resolve()
+            .then(function(){
+                return $.post('admin-delete-admin', 'username=' + username);
+            })
+            .then(function(admins){
+		        $("#adminsList").load("adminsList.html");
+		        createAdminsTable();
+            })
+            .catch(function(err){
+                console.log(err);
+            });
+        }
         function onModifyAdminCancel() {
 	        $("#adminsList").load("adminsList.html");
 	        createAdminsTable();
