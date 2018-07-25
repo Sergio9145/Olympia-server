@@ -11,5 +11,5 @@ module.exports = mongoose.model('User', {
     loginToken: String,
     dateRegistered: Date,
     key: String,
-    expiresDate : Date
+    expiresDate: Date
 });

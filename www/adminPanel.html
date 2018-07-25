@@ -19,7 +19,15 @@
     
     <script type="text/javascript">
     	/*global $*/
-        
+        function guid() {
+			function s4() {
+			return Math.floor((1 + Math.random()) * 0x10000)
+				.toString(16)
+				.substring(1);
+			}
+			return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+		}
+
         function handleLoginAttempt() {
             var username = $('#username').val();
             var password = $('#password').val();
@@ -50,12 +58,15 @@
         }
 
 		function loadPage() {
-            $("#adminsList").load("adminsList.html");
-            createAdminsTable();
-            $("#keysList").load("keysList.html");
-            createKeysTable();
-            $("#usersList").load("usersList.html");
-            createUsersTable();
+            $("#adminsList").load("adminsList.html", function() {
+				createAdminsTable();
+            });
+            $("#keysList").load("keysList.html", function() {
+				createKeysTable();
+            });
+            $("#usersList").load("usersList.html", function() {
+				createUsersTable();
+            });
 		}
 		
 		function createAdminsTable() {
@@ -67,7 +78,7 @@
                 $('#admins').html('');
                 $('#admins').append(
                 '<tr>' +
-                '<td><b>Username</b></td><td><b>First name</b></td><td><b>Last name</b></td>' +
+                '<td><b>User name</b></td><td><b>First name</b></td><td><b>Last name</b></td>' +
                 '</tr>');
                 admins.forEach(function(entity){
                     $('#admins').append(
@@ -102,14 +113,17 @@
             })
             .then(function(keys){
                 $('#keys').html('');
+                $('#keys').append(
+                '<tr>' +
+                '<td><b>Key name</b></td><td><b>UUID</b></td><td><b>Expires on</b></td>' +
+                '</tr>');
                 keys.forEach(function(entity){
                     $('#keys').append(
                         '<tbody>' +
                         '<tr>' +
-                        '<td class="checkbox-col">' +
-                        '<input type="checkbox" style="text-align:center;" ng-model="x.dedbuffer"' +
-                        '</td>' +
-                        '<td data-userId="' + entity.uuid + '">' + entity.expiresDate + '</td>' +
+                        '<td data-userId="' + entity._id + '"><a href="javascript:modifyKey(\'' + entity.name + '\', \'' + entity.uuid + '\', \'' + entity.expiresDate + '\')">' + entity.name + '</a></td>' +
+                        '<td>' + entity.uuid + '</td>' +
+                        '<td>' + entity.expiresDate + '</td>' +
                         '</tr>' +
                         '</tbody>'
                     );
@@ -187,17 +201,19 @@
             .then(function(){
                 return $.post('admin-add-admin', 'firstname=' + firstname + '&lastname=' + lastname + '&username=' + username + '&password=' + password);
             })
-            .then(function(admins){
-		        $("#adminsList").load("adminsList.html");
-		        createAdminsTable();
+            .then(function(){
+		        $("#adminsList").load("adminsList.html", function() {
+					createAdminsTable();
+		        });
             })
             .catch(function(err){
                 console.log(err);
             });
         }
-        function onAddAdminCancel() {
-	        $("#adminsList").load("adminsList.html");
-	        createAdminsTable();
+        function onAdminCancel() {
+	        $("#adminsList").load("adminsList.html", function() {
+				createAdminsTable();
+	        });
         }
 
         function modifyAdmin(firstname, lastname, username, password) {
@@ -218,9 +234,10 @@
             .then(function(){
                 return $.post('admin-modify-admin', 'firstname=' + firstname + '&lastname=' + lastname + '&username=' + username + '&password=' + password);
             })
-            .then(function(admins){
-		        $("#adminsList").load("adminsList.html");
-		        createAdminsTable();
+            .then(function(){
+		        $("#adminsList").load("adminsList.html", function() {
+					createAdminsTable();
+		        });
             })
             .catch(function(err){
                 console.log(err);
@@ -233,17 +250,67 @@
             .then(function(){
                 return $.post('admin-delete-admin', 'username=' + username);
             })
-            .then(function(admins){
-		        $("#adminsList").load("adminsList.html");
-		        createAdminsTable();
+            .then(function(){
+		        $("#adminsList").load("adminsList.html", function() {
+					createAdminsTable();
+		        });
             })
             .catch(function(err){
                 console.log(err);
             });
         }
-        function onModifyAdminCancel() {
-	        $("#adminsList").load("adminsList.html");
-	        createAdminsTable();
+
+		function addKey() {
+			$("#keys-content").load("addKey.html");
+        }
+        function onAddKey() {
+			var name = $('#new_key_name').val();
+			var uuid = guid();
+            var expiresDate = $('#new_key_expires_date').val();
+
+            Promise.resolve()
+            .then(function(){
+                return $.post('admin-add-key', 'name=' + name + '&uuid=' + uuid + '&expiresDate=' + expiresDate);
+            })
+            .then(function(){
+		        $("#keysList").load("keysList.html", function() {
+					createKeysTable();
+		        });
+            })
+            .catch(function(err){
+                console.log(err);
+            });
+        }
+        function onKeyCancel() {
+	        $("#keysList").load("keysList.html", function() {
+				createKeysTable();
+	        });
+        }
+
+        function modifyKey(name, uuid, expiresDate) {
+			$("#keys-content").load("modifyKey.html", function() {
+				$('#new_key_name').val(name);
+				$('#new_key_uuid').val(uuid);
+				$('#new_key_expires_date').val(expiresDate);
+			});
+        }
+        function onModifyKey() {
+			var name = $('#new_key_name').val();
+            var uuid = $('#new_key_uuid').val();
+			var expiresDate = $('#new_key_expires_date').val();
+
+            Promise.resolve()
+            .then(function(){
+                return $.post('admin-modify-key', 'name=' + name + '&uuid=' + uuid + '&expiresDate=' + expiresDate);
+            })
+            .then(function(){
+		        $("#keysList").load("keysList.html", function() {
+					createKeysTable();
+		        });
+            })
+            .catch(function(err){
+                console.log(err);
+            });
         }
 	</script>
 </head>
