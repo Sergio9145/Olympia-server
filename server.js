@@ -74,11 +74,27 @@ router.post('/register', function(req, res) {
 			console.log(msg1);
 			res.status(500).send({ msg: msg1 });
 		} else {
-			var newToken = guid();
+
+			var trialKeyUuid = guid();
 			var trial_days = 5;
-			var now = new Date();
 			var exp = new Date();
 			exp.setDate(exp.getDate() + trial_days);
+
+			var trialKey = new Key({
+				name: 'Trial key',
+				uuid: trialKeyUuid,
+				expiresDate: exp
+			});
+			trialKey.save(function(err) {
+				if (err) {
+					console.log('Trial key could not be saved' + ': ' + err);
+					trialKeyUuid = null;
+				} else {
+					console.log('Trial key was successfully saved');
+				}
+			});
+
+			var newToken = guid();
 			var newUser = new User({
 				firstName: req.body.firstName,
 				lastName: req.body.lastName,
@@ -87,11 +103,10 @@ router.post('/register', function(req, res) {
 				//password: hash.createHash(req.body.password)
 				password: req.body.password,
 				loginToken: newToken, // should be a unique string
-				dateRegistered: now, // current time
-				key: guid(),
-				expiresDate: exp
+				dateRegistered: new Date(), // current time
+				key: trialKeyUuid
 			});
-			
+
 			newUser.save(function(err) {
 				if (err) {
 					var msg1 = 'Could not be saved';
@@ -293,9 +308,12 @@ router.post('/getkey', function(req, res) {
 	.then(function(foundUser) {
 		var msg1;
 		if (foundUser) {
-			console.log('User\'s key is ' + foundUser.key + ' expires on ' + foundUser.expiresDate);
-			var millis = foundUser.expiresDate.getTime();
-			res.status(200).send({ key: foundUser.key, expiresDate: millis });
+			Key.findOne({ uuid: foundUser.key })
+			.then(function(foundKey) {
+				console.log('User\'s key is ' + foundKey.name + ' expires on ' + foundKey.expiresDate);
+				var millis = foundKey.expiresDate.getTime();
+				res.status(200).send({ key: foundKey.uuid, expiresDate: millis });
+			});
 		} else {
 			msg1 = 'User not found';
 			console.log(msg1);

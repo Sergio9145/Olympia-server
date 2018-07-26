@@ -77,9 +77,9 @@
             .then(function(admins){
                 $('#admins').html('');
                 $('#admins').append(
-                '<tr>' +
-                '<td><b>User name</b></td><td><b>First name</b></td><td><b>Last name</b></td>' +
-                '</tr>');
+	                '<tr>' +
+	                '<td><b>Username</b></td><td><b>First name</b></td><td><b>Last name</b></td>' +
+	                '</tr>');
                 admins.forEach(function(entity){
                     $('#admins').append(
                         '<tbody>' +
@@ -114,9 +114,9 @@
             .then(function(keys){
                 $('#keys').html('');
                 $('#keys').append(
-                '<tr>' +
-                '<td><b>Key name</b></td><td><b>UUID</b></td><td><b>Expires on</b></td>' +
-                '</tr>');
+	                '<tr>' +
+	                '<td><b>Key name</b></td><td><b>UUID</b></td><td><b>Expires on</b></td>' +
+	                '</tr>');
                 keys.forEach(function(entity){
                     $('#keys').append(
                         '<tbody>' +
@@ -156,14 +156,23 @@
             })
             .then(function(users){
                 $('#users').html('');
+				$('#users').append(
+	                '<tr>' +
+	                '<td class="checkbox-col"><input type="checkbox" style="text-align:center;" id="check_all" onclick=\'checkAll(this)\'</td>' +
+                    '<td><b>Username</b></td>' +
+                    '<td><b>First name</b></td>' +
+                    '<td><b>Last name</b></td>' +
+                    '<td><b>Key assigned</b></td>' +
+	                '</tr>');
                 users.forEach(function(entity){
                     $('#users').append(
                         '<tbody>' +
                         '<tr>' +
-                        '<td class="checkbox-col">' +
-                        '<input type="checkbox" style="text-align:center;" ng-model="x.dedbuffer"' +
-                        '</td>' +
-                        '<td data-userId="' + entity._id + '">' + entity.username + '</td>' +
+                        '<td class="checkbox-col"><input type="checkbox" style="text-align:center;" ng-model="x.dedbuffer"</td>' +
+						'<td data-userId="' + entity._id + '">' + entity.username + '</a></td>' +
+                        '<td>' + entity.firstName + '</td>' +
+                        '<td>' + entity.lastName + '</td>' +
+                        '<td>' + entity.key + '</td>' +
                         '</tr>' +
                         '</tbody>'
                     );
@@ -311,6 +320,19 @@
             .catch(function(err){
                 console.log(err);
             });
+        }
+
+        function checkAll(bx) {
+			var cbs = document.getElementsByTagName('input');
+			for(var i = 0; i < cbs.length; i++) {
+				if (cbs[i].type == 'checkbox') {
+					cbs[i].checked = bx.checked;
+				}
+			}
+		}
+
+        function changeKey() {
+
         }
 	</script>
 </head>
