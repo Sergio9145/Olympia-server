@@ -1,3 +1,7 @@
+* {
+	font-family: Quicksand;
+	font-weight: bold;
+}
 
 #header-section {
   background-color: #004225;
@@ -10,35 +14,18 @@
 
 #main-title {
   color: white;
-  font-family: 'Quicksand', sans-serif;
-}
-
-
-#header-section {
-  background-color: #004225;
-}
-
-#olympia-icon {
-  float:left;
-  margin-right: 20px;
-}
-
-#main-title {
-  color: white;
-  font-family: 'Quicksand', sans-serif;
 }
 
 #body-section {
-    background-color: #e4e4d3;
+    background-color: #f2f2f2;
     height: 100vh;
 }
 
 #table-name {
 	padding: 15px;
 	padding-left: 32px;
-	font-family: 'Quicksand', sans-serif;
-	background-color: #5a5a54;
-	color: white;
+	background-color: #ffd384;
+	color: #333333;
 }
 
 .checkbox-col {
@@ -51,4 +38,13 @@
 
 .input-form {
     max-width: 65%;
+}
+
+.control_btn {
+	padding: 10px;
+	float: right;
+}
+
+.select_box {
+	margin: 10px;
 }

@@ -1,7 +1,20 @@
 <h3 id="table-name"><b>Users</b></h3>
-<div id="users-content">
-	<table id="users" class="display" style="width:100%">
-	<div class="form-group">
-		<button class="btn btn-primary" onclick='changeKey()'>Change key...</button>
-	</div>
-</div>
+<!--<div id="users-content">-->
+	<form id="frm-example">
+		<table id="users" class="display" cellspacing="0" width="100%">
+			<thead><tr>
+				<th><center><input name="select_all" id="example-select-all" type="checkbox" /></center></th>
+				<th>Username</th>
+				<th>First name</th>
+				<th>Last name</th>
+				<th>Key assigned</th>
+			</tr></thead>
+		</table>
+
+		<div class="control_btn"><select class=select_box></select><button class="btn btn-primary">Change key...</button></div>
+		<hr>
+		<b>Data submitted to the server:</b><br>
+
+		<pre id="example-console"></pre>
+	</form>
+<!--</div>-->

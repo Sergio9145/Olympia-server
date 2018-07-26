@@ -9,7 +9,7 @@
 
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Quicksand|Varela+Round">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Quicksand">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css">
     
@@ -74,32 +74,23 @@
             .then(function(){
                 return $.post('admin-get-admins');
             })
-            .then(function(admins){
-                $('#admins').html('');
-                $('#admins').append(
-	                '<tr>' +
-	                '<td><b>Username</b></td><td><b>First name</b></td><td><b>Last name</b></td>' +
-	                '</tr>');
-                admins.forEach(function(entity){
-                    $('#admins').append(
-                        '<tbody>' +
-                        '<tr>' +
-                        '<td data-userId="' + entity._id + '"><a href="javascript:modifyAdmin(\'' + entity.firstname + '\', \'' + entity.lastname + '\', \'' + entity.username + '\', \'' + entity.password + '\')">' + entity.username + '</a></td>' +
-                        '<td>' + entity.firstname + '</td>' +
-                        '<td>' + entity.lastname + '</td>' +
-                        '</tr>' +
-                        '</tbody>'
-                    );
-                });
-            })
-            .then(function(){
-	            $('#admins').DataTable({
-		            select: {
-			            style:    'os',
-			            selector: 'td:first-child'
-		            },
-		            order: [[ 1, 'asc' ]]
-	            });
+            .then(function(admins) {
+
+				var parsed_values = [];
+
+				for (var i = 0; i < admins.length; i++) {
+					var new_val = [];
+					new_val[0] = i+1;
+					new_val[1] = '<a href="javascript:modifyAdmin(\'' + admins[i].firstname + '\', \'' + admins[i].lastname + '\', \'' + admins[i].username + '\', \'' + admins[i].password + '\')">' + admins[i].username + '</a>';
+					new_val[2] = admins[i].firstname;
+					new_val[3] = admins[i].lastname;
+					parsed_values[i] = new_val;
+				};
+
+				$('#admins').DataTable({
+					data: parsed_values,
+					'order': [0, 'asc']
+				});
             })
             .catch(function(err){
                 console.log(err);
@@ -112,90 +103,111 @@
                 return $.post('admin-get-keys');
             })
             .then(function(keys){
-                $('#keys').html('');
-                $('#keys').append(
-	                '<tr>' +
-	                '<td><b>Key name</b></td><td><b>UUID</b></td><td><b>Expires on</b></td>' +
-	                '</tr>');
-                keys.forEach(function(entity){
-                    $('#keys').append(
-                        '<tbody>' +
-                        '<tr>' +
-                        '<td data-userId="' + entity._id + '"><a href="javascript:modifyKey(\'' + entity.name + '\', \'' + entity.uuid + '\', \'' + entity.expiresDate + '\')">' + entity.name + '</a></td>' +
-                        '<td>' + entity.uuid + '</td>' +
-                        '<td>' + entity.expiresDate + '</td>' +
-                        '</tr>' +
-                        '</tbody>'
-                    );
-                });
-            })
-            .then(function(){
-	            $('#keys').DataTable({
-					columnDefs: [ {
-						orderable: false,
-			            className: 'select-checkbox',
-			            targets:   0
-		            } ],
-		            select: {
-			            style:    'os',
-			            selector: 'td:first-child'
-		            },
-		            order: [[ 1, 'asc' ]]
-	            });
+
+				var parsed_values = [];
+
+				for (var i = 0; i < keys.length; i++) {
+					var new_val = [];
+					new_val[0] = i+1;
+					new_val[1] = '<a href="javascript:modifyKey(\'' + keys[i].name + '\', \'' + keys[i].uuid + '\', \'' + keys[i].expiresDate + '\')">' + keys[i].name + '</a>';
+					new_val[2] = keys[i].uuid;
+					new_val[3] = keys[i].expiresDate;
+					parsed_values[i] = new_val;
+				};
+
+				$('#keys').DataTable({
+					data: parsed_values,
+					'order': [0, 'asc']
+				});
             })
             .catch(function(err){
                 console.log(err);
             });
 		}
-		
-    	function createUsersTable() {
-            //start a promise chain
+
+		function createUsersTable() {
             Promise.resolve()
             .then(function(){
                 return $.post('admin-get-users');
             })
             .then(function(users){
-                $('#users').html('');
-				$('#users').append(
-	                '<tr>' +
-	                '<td class="checkbox-col"><input type="checkbox" style="text-align:center;" id="check_all" onclick=\'checkAll(this)\'</td>' +
-                    '<td><b>Username</b></td>' +
-                    '<td><b>First name</b></td>' +
-                    '<td><b>Last name</b></td>' +
-                    '<td><b>Key assigned</b></td>' +
-	                '</tr>');
-                users.forEach(function(entity){
-                    $('#users').append(
-                        '<tbody>' +
-                        '<tr>' +
-                        '<td class="checkbox-col"><input type="checkbox" style="text-align:center;" ng-model="x.dedbuffer"</td>' +
-						'<td data-userId="' + entity._id + '">' + entity.username + '</a></td>' +
-                        '<td>' + entity.firstName + '</td>' +
-                        '<td>' + entity.lastName + '</td>' +
-                        '<td>' + entity.key + '</td>' +
-                        '</tr>' +
-                        '</tbody>'
-                    );
-                });
-            })
-            .then(function(){
-	            $('#users').DataTable({
-					columnDefs: [ {
-						orderable: false,
-			            className: 'select-checkbox',
-			            targets:   0
-		            } ],
-		            select: {
-			            style:    'os',
-			            selector: 'td:first-child'
-		            },
-		            order: [[ 1, 'asc' ]]
-	            });
-            })
-            .catch(function(err){
-                console.log(err);
-            });
-        }
+
+				var parsed_values = [];
+
+				for (var i = 0; i < users.length; i++) {
+					var new_val = [];
+					new_val[0] = i;
+					new_val[1] = users[i].username;
+					new_val[2] = users[i].firstName;
+					new_val[3] = users[i].lastName;
+					new_val[4] = users[i].key;
+					parsed_values[i] = new_val;
+				};
+
+				var table = $('#users').DataTable({
+					data: parsed_values,
+					'columnDefs': [{
+						'targets': 0,
+						'searchable':false,
+						'orderable':false,
+						'className': 'dt-body-center',
+						'render': function (data, type, full, meta){
+							return '<input type="checkbox" name="id[]" value="' +
+							$('<div/>').text(data).html() + '">';
+						}
+					}],
+					'order': [1, 'asc']
+				});
+
+				// Handle click on "Select all" control
+				$('#example-select-all').on('click', function(){
+					// Check/uncheck all checkboxes in the table
+					var rows = table.rows({ 'search': 'applied' }).nodes();
+					$('input[type="checkbox"]', rows).prop('checked', this.checked);
+				});
+
+				// Handle click on checkbox to set state of "Select all" control
+				$('#example tbody').on('change', 'input[type="checkbox"]', function(){
+					// If checkbox is not checked
+					if(!this.checked){
+						var el = $('#example-select-all').get(0);
+						// If "Select all" control is checked and has 'indeterminate' property
+						if(el && el.checked && ('indeterminate' in el)){
+							// Set visual state of "Select all" control
+							// as 'indeterminate'
+							el.indeterminate = true;
+						}
+					}
+				});
+
+				$('#frm-example').on('submit', function(e){
+					var form = this;
+
+					// Iterate over all checkboxes in the table
+					table.$('input[type="checkbox"]').each(function() {
+						// If checkbox doesn't exist in DOM
+						if(!$.contains(document, this)) {
+							// If checkbox is checked
+							if(this.checked) {
+								// Create a hidden element
+								$(form).append($('<input>')
+									.attr('type', 'hidden')
+									.attr('name', this.name)
+									.val(this.value)
+								);
+							}
+						}
+					});
+
+					// Output form data to a console
+					$('#example-console').text($(form).serialize());
+					console.log("Form submission", $(form).serialize());
+
+					// Prevent actual form submission
+					e.preventDefault();
+				});
+			});
+		}
 
         function addAdmin() {
 			$("#admins-content").load("addAdmin.html");
@@ -322,15 +334,6 @@
             });
         }
 
-        function checkAll(bx) {
-			var cbs = document.getElementsByTagName('input');
-			for(var i = 0; i < cbs.length; i++) {
-				if (cbs[i].type == 'checkbox') {
-					cbs[i].checked = bx.checked;
-				}
-			}
-		}
-
         function changeKey() {
 
         }
@@ -341,7 +344,7 @@
     <section id="header-section">
 		<div class="container">
 			<div class="header">
-				<h1 id="main-title">Olympia</h1>
+				<h1 id="main-title">Olympia – Administration Portal</h1>
 			</div>
 		</div>
     </section>
@@ -350,7 +353,7 @@
 		<div class="container" id="adminsList">
 			<center>
 				<div style="padding-top: 100pt;">
-					<label>Sign in</label>
+					<h3><b>Sign in</b></h3>
 					<div class="form-group">
 						<input type="text" class="form-control" id="username" placeholder="Username">
 					</div>
