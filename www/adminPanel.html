@@ -19,6 +19,8 @@
     
     <script type="text/javascript">
     	/*global $*/
+		var all_keys = null;
+
         function guid() {
 			function s4() {
 			return Math.floor((1 + Math.random()) * 0x10000)
@@ -60,15 +62,15 @@
 		function loadPage() {
             $("#adminsList").load("adminsList.html", function() {
 				createAdminsTable();
-            });
-            $("#keysList").load("keysList.html", function() {
-				createKeysTable();
-            });
-            $("#usersList").load("usersList.html", function() {
-				createUsersTable();
-            });
+				$("#keysList").load("keysList.html", function() {
+					createKeysTable();
+					$("#usersList").load("usersList.html", function() {
+						createUsersTable();
+					});
+				});
+			});
 		}
-		
+
 		function createAdminsTable() {
             Promise.resolve()
             .then(function(){
@@ -80,7 +82,7 @@
 
 				for (var i = 0; i < admins.length; i++) {
 					var new_val = [];
-					new_val[0] = i+1;
+					new_val[0] = i + 1;
 					new_val[1] = '<a href="javascript:modifyAdmin(\'' + admins[i].firstname + '\', \'' + admins[i].lastname + '\', \'' + admins[i].username + '\', \'' + admins[i].password + '\')">' + admins[i].username + '</a>';
 					new_val[2] = admins[i].firstname;
 					new_val[3] = admins[i].lastname;
@@ -96,19 +98,19 @@
                 console.log(err);
             });
 		}
-		
+
 		function createKeysTable() {
             Promise.resolve()
             .then(function(){
                 return $.post('admin-get-keys');
             })
             .then(function(keys){
-
+				all_keys = keys;
 				var parsed_values = [];
 
 				for (var i = 0; i < keys.length; i++) {
 					var new_val = [];
-					new_val[0] = i+1;
+					new_val[0] = i + 1;
 					new_val[1] = '<a href="javascript:modifyKey(\'' + keys[i].name + '\', \'' + keys[i].uuid + '\', \'' + keys[i].expiresDate + '\')">' + keys[i].name + '</a>';
 					new_val[2] = keys[i].uuid;
 					new_val[3] = keys[i].expiresDate;
@@ -136,75 +138,65 @@
 
 				for (var i = 0; i < users.length; i++) {
 					var new_val = [];
-					new_val[0] = i;
+					new_val[0] = i + 1;
 					new_val[1] = users[i].username;
 					new_val[2] = users[i].firstName;
 					new_val[3] = users[i].lastName;
 					new_val[4] = users[i].key;
 					parsed_values[i] = new_val;
-				};
+				}
 
-				var table = $('#users').DataTable({
+				var users_table = $('#users').DataTable({
 					data: parsed_values,
-					'columnDefs': [{
-						'targets': 0,
-						'searchable':false,
-						'orderable':false,
-						'className': 'dt-body-center',
-						'render': function (data, type, full, meta){
-							return '<input type="checkbox" name="id[]" value="' +
-							$('<div/>').text(data).html() + '">';
-						}
-					}],
-					'order': [1, 'asc']
+					destroy: true,
+					'order': [0, 'asc']
 				});
 
-				// Handle click on "Select all" control
-				$('#example-select-all').on('click', function(){
-					// Check/uncheck all checkboxes in the table
-					var rows = table.rows({ 'search': 'applied' }).nodes();
-					$('input[type="checkbox"]', rows).prop('checked', this.checked);
+				$('#selector').html('');
+				var option = '<option value="null">Select a key</option>';
+				for (var i = 0; i < all_keys.length; i++) {
+					option += '<option value="'+ all_keys[i].uuid + '">' + all_keys[i].uuid + '</option>';
+				}
+				$('#selector').append(option);
+
+				$('#users tbody').on('click', 'tr', function () {
+					$(this).toggleClass('selected');
 				});
 
-				// Handle click on checkbox to set state of "Select all" control
-				$('#example tbody').on('change', 'input[type="checkbox"]', function(){
-					// If checkbox is not checked
-					if(!this.checked){
-						var el = $('#example-select-all').get(0);
-						// If "Select all" control is checked and has 'indeterminate' property
-						if(el && el.checked && ('indeterminate' in el)){
-							// Set visual state of "Select all" control
-							// as 'indeterminate'
-							el.indeterminate = true;
-						}
-					}
-				});
-
-				$('#frm-example').on('submit', function(e){
-					var form = this;
-
-					// Iterate over all checkboxes in the table
-					table.$('input[type="checkbox"]').each(function() {
-						// If checkbox doesn't exist in DOM
-						if(!$.contains(document, this)) {
-							// If checkbox is checked
-							if(this.checked) {
-								// Create a hidden element
-								$(form).append($('<input>')
-									.attr('type', 'hidden')
-									.attr('name', this.name)
-									.val(this.value)
-								);
-							}
-						}
+				$('#change_btn').on('click', function(e) {
+					var chosen_key = $('#selector :selected').text();
+					var chosen_users = $.map(users_table.rows('.selected').data(), function (item) {
+						return item[1];
 					});
 
-					// Output form data to a console
-					$('#example-console').text($(form).serialize());
-					console.log("Form submission", $(form).serialize());
+					Promise.resolve()
+					.then(function(){
+						return $.post('admin-change-keys', { 'uuid': chosen_key, 'users': chosen_users });
+					})
+					.then(function(){
+						Promise.resolve()
+						.then(function(){
+							return $.post('admin-get-users');
+						})
+						.then(function(users){
 
-					// Prevent actual form submission
-					e.preventDefault();
+							var parsed_values = [];
+
+							for (var i = 0; i < users.length; i++) {
+								var new_val = [];
+								new_val[0] = i + 1;
+								new_val[1] = users[i].username;
+								new_val[2] = users[i].firstName;
+								new_val[3] = users[i].lastName;
+								new_val[4] = users[i].key;
+								parsed_values[i] = new_val;
+							}
+
+							users_table.clear();
+							users_table.rows.add(parsed_values);
+							users_table.draw();
+						});
+					});
 				});
 			});
 		}
@@ -332,10 +324,6 @@
             .catch(function(err){
                 console.log(err);
             });
-        }
-
-        function changeKey() {
-
         }
 	</script>
 </head>

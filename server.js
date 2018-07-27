@@ -345,9 +345,7 @@ router.get('/', function(req, res){
 
 	Admin.findOne({ username: defaultAdmin.username })
 	.then(function(foundUser) {
-		if (foundUser) {
-			console.log('Default admin already exists');
-		} else {
+		if (!foundUser) {
 			defaultAdmin.save(function(err) {
 				if (err) {
 					console.log('Default admin/admin record could not be saved: ' + err);
@@ -550,6 +548,59 @@ router.post('/admin-modify-key', userAuth.isAuthenticated, function(req, res) {
 					res.status(200).send({ msg: msg1 });
 				}
 			});
+		} else {
+			var msg1 = 'Key was not found';
+			console.log(msg1);
+			res.status(500).send({ msg: msg1 });
+		}
+	});
+});
+
+router.post('/admin-change-keys', userAuth.isAuthenticated, function(req, res) {
+	Key.findOne({ uuid: req.body.uuid })
+	.then(function(foundKey) {
+		if (foundKey) {
+			var users = req.body.users;
+			if (users != null) {
+
+				Promise.resolve()
+				.then(function(){
+
+				var promises = [];
+				users.forEach(function(user){
+					promises.push(
+					Promise.resolve()
+					.then(function(){
+						console.log('Changing key for User: ' + user);
+						User.findOne({ username: user })
+						.then(function(foundUser) {
+							if (foundUser) {
+								foundUser.key = foundKey.uuid;
+								foundUser.save(function(err) {
+									if (err) {
+										var msg1 = 'Could not be saved';
+										console.log(msg1 + ': ' + err);
+										// res.status(500).send({ msg: msg1 });
+									} else {
+										var msg1 = 'User ' + foundUser.username + ' was successfully updated';
+										console.log(msg1);
+										// res.status(200).send({ msg: msg1 });
+									}
+								});
+							} else {
+								var msg1 = 'User was not found';
+								console.log(msg1);
+								// res.status(500).send({ msg: msg1 });
+							}
+						});
+					}));
+				});
+					return Promise.all(promises);
+				})
+				.then(function(){
+					res.status(200).send({ msg: msg1 });
+				})
+			}
 		} else {
 			var msg1 = 'Key was not found';
 			console.log(msg1);
