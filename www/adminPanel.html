@@ -12,7 +12,13 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Quicksand">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css">
-    
+
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
@@ -91,7 +97,13 @@
 
 				$('#admins').DataTable({
 					data: parsed_values,
-					'order': [0, 'asc']
+					'order': [0, 'asc'],
+					  "columns": [
+						{ "width": "50px" },
+						null,
+						null,
+						null
+						]
 				});
             })
             .catch(function(err){
@@ -119,7 +131,13 @@
 
 				$('#keys').DataTable({
 					data: parsed_values,
-					'order': [0, 'asc']
+					'order': [0, 'asc'],
+					"columns": [
+						{ "width": "50px" },
+						null,
+						null,
+						null
+						]
 				});
             })
             .catch(function(err){
@@ -152,6 +170,8 @@
 					'order': [0, 'asc']
 				});
 
+				while (all_keys == null);
+
 				$('#selector').html('');
 				var option = '<option value="null">Select a key</option>';
 				for (var i = 0; i < all_keys.length; i++) {
@@ -164,11 +184,16 @@
 				});
 
 				$('#change_btn').on('click', function(e) {
+					if (document.getElementById("selector").selectedIndex == "0") {
+						alert("Please, select a key from the list");
+						return;
+					}
 					var chosen_key = $('#selector :selected').text();
 					var chosen_users = $.map(users_table.rows('.selected').data(), function (item) {
 						return item[1];
 					});
 
+					if (chosen_users.length > 0) {
 					Promise.resolve()
 					.then(function(){
 						return $.post('admin-change-keys', { 'uuid': chosen_key, 'users': chosen_users });
@@ -197,6 +222,9 @@
 							users_table.draw();
 						});
 					});
+					} else {
+						alert("Empty users list. Please, select at least one user");
+					}
 				});
 			});
 		}
